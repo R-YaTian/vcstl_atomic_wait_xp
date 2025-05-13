@@ -3,3 +3,4 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <xatomic_wait.h>
+#include <internal_shared.h>

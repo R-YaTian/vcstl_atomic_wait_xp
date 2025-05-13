@@ -4,6 +4,14 @@ project(msvcp_atomic_wait LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
+get_filename_component(TOOLSET_BINARIES_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY) # Example: $\VC\Tools\MSVC\14.23.27931\bin\Hostx86\x86
+get_filename_component(TOOLSET_ROOT_DIR "${TOOLSET_BINARIES_DIR}" DIRECTORY) # $\VC\Tools\MSVC\14.23.27931\bin\Hostx86
+get_filename_component(TOOLSET_ROOT_DIR "${TOOLSET_ROOT_DIR}" DIRECTORY) # $\VC\Tools\MSVC\14.23.27931\bin
+get_filename_component(TOOLSET_ROOT_DIR "${TOOLSET_ROOT_DIR}" DIRECTORY) # $\VC\Tools\MSVC\14.23.27931
+include_directories(BEFORE
+    "${TOOLSET_ROOT_DIR}/crt/src/vcruntime"
+)
+
 # set pch config
 set(PCH_HEADER "pch.h")
 set(PCH_SOURCE "pch.cpp")
@@ -34,6 +42,9 @@ generate_satellite_def("atomic_wait" "${D_SUFFIX}")
 set(COMMON_SOURCES
     ${PCH_SOURCE}
     atomic_wait.cpp
+    parallel_algorithms.cpp
+    syncstream.cpp
+    tzdb.cpp
 )
 
 set(DLL_SOURCES
@@ -43,13 +54,20 @@ set(DLL_SOURCES
 
 # Add headers
 set(HEADERS
+    init_locks.hpp
     framework.h
     ${PCH_HEADER}
 )
 
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(SUBSYSTEM_VERSION "5.02")
+else()
+    set(SUBSYSTEM_VERSION "5.01")
+endif()
+
 # Building dll
 add_library(msvcp_atomic_wait SHARED ${DLL_SOURCES} ${HEADERS})
-target_link_options(msvcp_atomic_wait PRIVATE "/SUBSYSTEM:CONSOLE,5.01")
+target_link_options(msvcp_atomic_wait PRIVATE "/SUBSYSTEM:CONSOLE,${SUBSYSTEM_VERSION}")
 target_precompile_headers(msvcp_atomic_wait PRIVATE ${PCH_HEADER})
 
 # define export symbols
