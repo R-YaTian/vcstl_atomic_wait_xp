@@ -9,7 +9,6 @@ BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, LPVOID reserved)
         break;
 
     case DLL_PROCESS_DETACH:
-        if (reserved) break;
         break;
     }
     return TRUE;
